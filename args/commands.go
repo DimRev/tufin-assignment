@@ -32,6 +32,11 @@ var Commands = []Command{
 				Short:       "-h",
 				Description: "Print any command",
 			},
+			{
+				Long:        "--version",
+				Short:       "-v",
+				Description: "Print the version of the program",
+			},
 		},
 	},
 	{

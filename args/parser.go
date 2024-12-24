@@ -2,6 +2,7 @@ package args
 
 import (
 	"fmt"
+	"os"
 )
 
 func getCommand(name CommandName) (Command, error) {
@@ -47,8 +48,14 @@ func printFlags(flags []Flag) {
 	if len(flags) > 0 {
 		fmt.Println()
 	}
+
+	const (
+		longColWidth  = 20
+		shortColWidth = 10
+	)
+
 	for _, f := range flags {
-		fmt.Printf("%s\t%s\t\t\t%s\n", f.Long, f.Short, f.Description)
+		fmt.Printf("%-*s%-*s%s\n", longColWidth, f.Long, shortColWidth, f.Short, f.Description)
 	}
 }
 
@@ -59,6 +66,15 @@ func ParseArgs(args []string, commandMap map[CommandName]func() error) error {
 	}
 
 	command := CommandName(args[0])
+
+	if args[0] == "--version" || args[0] == "-v" {
+		printVersion()
+		return nil
+	}
+	if args[0] == "--help" || args[0] == "-h" {
+		HelpPrint(GlobalCommand)
+		return nil
+	}
 
 	c, err := getCommand(command)
 	if err != nil {
@@ -96,4 +112,14 @@ func parseCommandArgs(args []string, c Command, executeFunc func() error) error 
 	}
 
 	return nil
+}
+
+func printVersion() {
+	readVersion, err := os.ReadFile("./version")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println("tufin-assignment version", string(readVersion))
 }
