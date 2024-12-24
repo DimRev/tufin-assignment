@@ -9,7 +9,7 @@ go install github.com/DimRev/tufin-assignment@latest
 ## Usage
 
 ```bash
-tufin <command> [flags]
+tufin-assignment <command> [flags]
 ```
 
 where `<command>` is one of the following:
@@ -21,10 +21,11 @@ where `<command>` is one of the following:
 
 ### Flags
 
-`--help, -h` - will print details about the command
+- `--help, -h` - will print details about the command
+- `--version, -v` - will print the version of the program
 
 ## Example
 
 ```bash
-tufin cluster --help
+tufin-assignment cluster --help
 ```
