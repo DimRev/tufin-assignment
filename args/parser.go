@@ -48,29 +48,26 @@ func printFlags(flags []Flag) {
 	}
 }
 
-func ParseArgs(args []string) {
+func ParseArgs(args []string, commandMap map[CommandName]func()) {
 	if len(args) < 1 {
 		HelpPrint(GlobalCommand)
 		return
 	}
 
-	command := args[0]
-	switch command {
-	case string(ClusterCommand):
-		parseCommandArgs(args[1:], ClusterCommand)
-	case string(DeployCommand):
-		parseCommandArgs(args[1:], DeployCommand)
-	case string(StatusCommand):
-		parseCommandArgs(args[1:], StatusCommand)
-	default:
+	command := CommandName(args[0])
+	executeFunc, exists := commandMap[command]
+	if !exists {
 		fmt.Printf("Unknown command: %s\n", command)
 		HelpPrint(GlobalCommand)
+		return
 	}
+
+	parseCommandArgs(args[1:], command, executeFunc)
 }
 
-func parseCommandArgs(args []string, cmd CommandName) {
+func parseCommandArgs(args []string, cmd CommandName, executeFunc func()) {
 	if len(args) == 0 {
-		fmt.Println("Executing", cmd, "command...")
+		executeFunc()
 		return
 	}
 
