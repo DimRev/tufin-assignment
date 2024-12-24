@@ -52,46 +52,48 @@ func printFlags(flags []Flag) {
 	}
 }
 
-func ParseArgs(args []string, commandMap map[CommandName]func()) {
+func ParseArgs(args []string, commandMap map[CommandName]func() error) error {
 	if len(args) < 1 {
 		HelpPrint(GlobalCommand)
-		return
+		return nil
 	}
 
 	command := CommandName(args[0])
 
 	c, err := getCommand(command)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return CommandNotFoundError{CommandName: string(command)}
 	}
 
 	executeFunc, exists := commandMap[command]
 	if !exists {
 		fmt.Printf("Unknown command: %s\n", command)
 		HelpPrint(GlobalCommand)
-		return
+		return nil
 	}
 
-	parseCommandArgs(args[1:], c, executeFunc)
+	return parseCommandArgs(args[1:], c, executeFunc)
 }
 
-func parseCommandArgs(args []string, c Command, executeFunc func()) {
+func parseCommandArgs(args []string, c Command, executeFunc func() error) error {
 	if len(args) == 0 {
-		executeFunc()
-		return
+		err := executeFunc()
+		return err
 	}
 
 	if len(c.Flags) == 0 && len(args) > 0 {
-		fmt.Println(UnknownArgsError{Args: args, Command: c.Name})
-		return
+		return UnknownArgsError{Args: args, Command: c.Name}
 	}
 
 	// Placeholder if we want to add flag logic
 	for _, arg := range args {
 		if arg == "--help" || arg == "-h" {
 			HelpPrint(c.Name)
-			return
+			return nil
+		} else {
+			return UnknownArgsError{Args: args, Command: c.Name}
 		}
 	}
+
+	return nil
 }

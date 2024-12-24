@@ -17,6 +17,7 @@ where `<command>` is one of the following:
 - `cluster` - will deploy a k3s cluster
 - `deploy` - will deploy two pods: MySQL and WordPress
 - `status` - will print the status table of pods in the default namespace
+- `remove` - will remove the k3s cluster
 
 ### Flags
 

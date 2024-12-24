@@ -19,6 +19,7 @@ var (
 	ClusterCommand CommandName = "cluster"
 	DeployCommand  CommandName = "deploy"
 	StatusCommand  CommandName = "status"
+	RemoveCommand  CommandName = "remove"
 )
 
 var Commands = []Command{
@@ -58,6 +59,17 @@ var Commands = []Command{
 	{
 		Name:        StatusCommand,
 		Description: "Print the status table of pods in the default namespace",
+		Flags: []Flag{
+			{
+				Long:        "--help",
+				Short:       "-h",
+				Description: "Print details about this command",
+			},
+		},
+	},
+	{
+		Name:        RemoveCommand,
+		Description: "Remove the k3s cluster",
 		Flags: []Flag{
 			{
 				Long:        "--help",
