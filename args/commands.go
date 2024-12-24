@@ -27,22 +27,43 @@ var Commands = []Command{
 		Description: "",
 		Flags: []Flag{
 			{
-				Long:        "help",
+				Long:        "--help",
 				Short:       "-h",
-				Description: "Print this help message",
+				Description: "Print any command",
 			},
 		},
 	},
 	{
 		Name:        ClusterCommand,
 		Description: "Deploy a k3s Kubernetes cluster",
+		Flags: []Flag{
+			{
+				Long:        "--help",
+				Short:       "-h",
+				Description: "Print details about this command",
+			},
+		},
 	},
 	{
 		Name:        DeployCommand,
 		Description: "Deploy two pods: MySQL and WordPress",
+		Flags: []Flag{
+			{
+				Long:        "--help",
+				Short:       "-h",
+				Description: "Print details about this command",
+			},
+		},
 	},
 	{
 		Name:        StatusCommand,
 		Description: "Print the status table of pods in the default namespace",
+		Flags: []Flag{
+			{
+				Long:        "--help",
+				Short:       "-h",
+				Description: "Print details about this command",
+			},
+		},
 	},
 }

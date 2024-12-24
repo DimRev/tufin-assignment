@@ -29,6 +29,7 @@ func HelpPrint(cn CommandName) {
 
 func printGlobalHelp() {
 	fmt.Println("Available Commands:")
+	fmt.Println()
 	for _, c := range Commands {
 		if c.Name != GlobalCommand {
 			fmt.Printf("%s\t\t\t\t%s\n", c.Name, c.Description)
@@ -43,8 +44,11 @@ func printGlobalHelp() {
 }
 
 func printFlags(flags []Flag) {
+	if len(flags) > 0 {
+		fmt.Println()
+	}
 	for _, f := range flags {
-		fmt.Printf("\t%s\t%s\t%s\n", f.Long, f.Short, f.Description)
+		fmt.Printf("%s\t%s\t\t\t%s\n", f.Long, f.Short, f.Description)
 	}
 }
 
@@ -55,6 +59,13 @@ func ParseArgs(args []string, commandMap map[CommandName]func()) {
 	}
 
 	command := CommandName(args[0])
+
+	c, err := getCommand(command)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	executeFunc, exists := commandMap[command]
 	if !exists {
 		fmt.Printf("Unknown command: %s\n", command)
@@ -62,21 +73,25 @@ func ParseArgs(args []string, commandMap map[CommandName]func()) {
 		return
 	}
 
-	parseCommandArgs(args[1:], command, executeFunc)
+	parseCommandArgs(args[1:], c, executeFunc)
 }
 
-func parseCommandArgs(args []string, cmd CommandName, executeFunc func()) {
+func parseCommandArgs(args []string, c Command, executeFunc func()) {
 	if len(args) == 0 {
 		executeFunc()
 		return
 	}
 
+	if len(c.Flags) == 0 && len(args) > 0 {
+		fmt.Println(UnknownArgsError{Args: args, Command: c.Name})
+		return
+	}
+
+	// Placeholder if we want to add flag logic
 	for _, arg := range args {
-		if arg == "-h" || arg == "--help" {
-			HelpPrint(cmd)
+		if arg == "--help" || arg == "-h" {
+			HelpPrint(c.Name)
 			return
-		} else {
-			fmt.Println(InvalidFlagError{FlagName: arg, Command: cmd})
 		}
 	}
 }
