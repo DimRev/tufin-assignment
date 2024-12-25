@@ -34,7 +34,10 @@ var commandMap = map[args.CommandName]func() error{
 		return nil
 	},
 	args.StatusCommand: func() error {
-		fmt.Println("Printing the status table of pods in the default namespace")
+		err := k3ssCtx.StatusK3Pods()
+		if err != nil {
+			return err
+		}
 		return nil
 	},
 	args.RemoveCommand: func() error {

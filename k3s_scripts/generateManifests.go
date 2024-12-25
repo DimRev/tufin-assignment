@@ -13,8 +13,11 @@ func (ctx *Context) GenerateManifests() K3sError {
 	}
 
 	manifestFiles := []string{
+		"manifests/custom-local-path.yaml",
 		"manifests/mysql-config-map.yaml",
 		"manifests/wordpress-config-map.yaml",
+		"manifests/mysql-pvc.yaml",
+		"manifests/wordpress-pvc.yaml",
 		"manifests/mysql-deployment.yaml",
 		"manifests/wordpress-deployment.yaml",
 	}
