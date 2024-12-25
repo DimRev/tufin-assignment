@@ -54,3 +54,52 @@ func (e K3sClusterNotReadyError) Error() string {
 func (e K3sClusterNotReadyError) K3sError() string {
 	return fmt.Sprintf("K3s cluster not ready: %s", e.Message)
 }
+
+type YAMLFilesNotFound struct {
+	FileName string
+	Message  string
+}
+
+func (e YAMLFilesNotFound) Error() string {
+	return fmt.Sprintf("YAML files %s not found: %s", e.FileName, e.Message)
+}
+
+func (e YAMLFilesNotFound) K3sError() string {
+	return fmt.Sprintf("YAML files %s not found: %s", e.FileName, e.Message)
+}
+
+type YAMLUnmarshalError struct {
+	Message string
+}
+
+func (e YAMLUnmarshalError) Error() string {
+	return fmt.Sprintf("Error unmarshalling YAML: %s", e.Message)
+}
+
+func (e YAMLUnmarshalError) K3sError() string {
+	return fmt.Sprintf("Error unmarshalling YAML: %s", e.Message)
+}
+
+type YAMLMarshalError struct {
+	Message string
+}
+
+func (e YAMLMarshalError) Error() string {
+	return fmt.Sprintf("Error marshalling YAML: %s", e.Message)
+}
+
+func (e YAMLMarshalError) K3sError() string {
+	return fmt.Sprintf("Error marshalling YAML: %s", e.Message)
+}
+
+type ValuesReplacementError struct {
+	Message string
+}
+
+func (e ValuesReplacementError) Error() string {
+	return fmt.Sprintf("Error replacing values: %s", e.Message)
+}
+
+func (e ValuesReplacementError) K3sError() string {
+	return fmt.Sprintf("Error replacing values: %s", e.Message)
+}

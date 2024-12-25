@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      containers:
+      - name: wordpress
+        image: {{ .Wordpress.Image }}
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: {{ .Wordpress.DbHost }}
+        - name: WORDPRESS_DB_PORT
+          value: "{{ .Wordpress.DbPort }}"
+        - name: WORDPRESS_DB_USER
+          value: {{ .Wordpress.DbUser }}
+        - name: WORDPRESS_DB_PASSWORD
+          value: {{ .Wordpress.DbPassword }}
+        - name: WORDPRESS_DB_NAME
+          value: {{ .Wordpress.DbName }}
