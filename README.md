@@ -29,3 +29,7 @@ where `<command>` is one of the following:
 ```bash
 tufin-assignment cluster --help
 ```
+
+### Info
+
+As the tufin-assignment binary will try to read and write files to the OS temp directory, it is recommended to run it as root via `sudo`.
