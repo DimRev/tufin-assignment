@@ -29,37 +29,38 @@ type Values struct {
 	} `yaml:"wordpress"`
 }
 
-func GenerateManifests() error {
-	values, err := loadDefaultValues()
+func (ctx *Context) GenerateManifests() error {
+	values, err := ctx.loadDefaultValues()
 	if err != nil {
 		return err
 	}
 
-	err = renderAndSaveManifests(values)
+	err = ctx.renderAndSaveManifests(values)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Manifests successfully generated and saved to ./tmp.")
+	fmt.Println("Manifests successfully generated and saved to the OS temp directory.")
 	return nil
 }
 
-func loadDefaultValues() (Values, error) {
-	data, err := os.ReadFile("manifests/default-values.yaml")
+func (ctx *Context) loadDefaultValues() (Values, error) {
+	data, err := ctx.manifests.ReadFile("manifests/default-values.yaml")
 	if err != nil {
-		return Values{}, YAMLFilesNotFound{FileName: "default-values.yaml", Message: err.Error()}
+		return Values{}, fmt.Errorf("failed to read default values: %w", err)
 	}
 
 	var v Values
 	if err := yaml.Unmarshal(data, &v); err != nil {
-		return Values{}, YAMLUnmarshalError{Message: err.Error()}
+		return Values{}, fmt.Errorf("failed to parse default values: %w", err)
 	}
 
 	return v, nil
 }
 
-func renderAndSaveManifests(values Values) error {
-	if err := os.MkdirAll("./tmp", os.ModePerm); err != nil {
+func (ctx *Context) renderAndSaveManifests(values Values) error {
+	tempDir := filepath.Join(os.TempDir(), "tufin-assignment")
+	if err := os.MkdirAll(tempDir, os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create tmp directory: %w", err)
 	}
 
@@ -69,30 +70,22 @@ func renderAndSaveManifests(values Values) error {
 	}
 
 	for _, filePath := range manifestFiles {
-		fmt.Printf("Rendering %s manifest...\n", filePath)
-	}
-
-	for _, filePath := range manifestFiles {
-		templateData, err := os.ReadFile(filePath)
+		templateData, err := ctx.manifests.ReadFile(filePath)
 		if err != nil {
-			return YAMLFilesNotFound{FileName: filePath, Message: err.Error()}
+			return fmt.Errorf("failed to read manifest file %s: %w", filePath, err)
 		}
 
 		renderedData, err := renderTemplate(string(templateData), values)
 		if err != nil {
-			return ValuesReplacementError{Message: err.Error()}
+			return fmt.Errorf("failed to render template for %s: %w", filePath, err)
 		}
 
-		var manifest map[string]interface{}
-		if err := yaml.Unmarshal([]byte(renderedData), &manifest); err != nil {
-			return YAMLUnmarshalError{Message: err.Error()}
-		}
-
-		outputFilePath := filepath.Join("./tmp", filepath.Base(filePath))
+		outputFilePath := filepath.Join(tempDir, filepath.Base(filePath))
 		if err := os.WriteFile(outputFilePath, []byte(renderedData), 0644); err != nil {
-			return YAMLMarshalError{Message: err.Error()}
+			return fmt.Errorf("failed to write rendered manifest to %s: %w", outputFilePath, err)
 		}
 
+		ctx.tempFiles = append(ctx.tempFiles, outputFilePath)
 		fmt.Printf("Rendered manifest saved: %s\n", outputFilePath)
 	}
 
@@ -111,4 +104,16 @@ func renderTemplate(templateData string, values Values) (string, error) {
 	}
 
 	return rendered.String(), nil
+}
+
+func (ctx *Context) CleanupTempFiles() {
+	for _, filePath := range ctx.tempFiles {
+		err := os.Remove(filePath)
+		if err != nil {
+			fmt.Printf("Failed to remove temp file %s: %v\n", filePath, err)
+		} else {
+			fmt.Printf("Removed temp file: %s\n", filePath)
+		}
+	}
+	ctx.tempFiles = []string{}
 }

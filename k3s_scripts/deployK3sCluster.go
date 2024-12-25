@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func DeployK3sCluster() K3sError {
+func (ctx *Context) DeployK3sCluster() K3sError {
 	if os.Geteuid() != 0 {
 		return UnauthorizedError{Message: "You must run this script as root"}
 	}
@@ -30,7 +30,7 @@ func DeployK3sCluster() K3sError {
 
 	fmt.Println("Waiting for the k3s cluster to become ready...")
 
-	if err := waitForClusterReady(); err != nil {
+	if err := ctx.waitForClusterReady(); err != nil {
 		return K3sNotRunningError{Message: err.Error()}
 	}
 
@@ -38,7 +38,7 @@ func DeployK3sCluster() K3sError {
 	return nil
 }
 
-func waitForClusterReady() error {
+func (ctx *Context) waitForClusterReady() error {
 	const (
 		maxRetries   = 20
 		retryDelay   = 5 * time.Second

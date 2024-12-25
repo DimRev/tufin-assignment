@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"os"
 
@@ -8,20 +9,29 @@ import (
 	k3sscripts "github.com/DimRev/tufin-assignment/k3s_scripts"
 )
 
+//go:embed manifests/*
+var manifests embed.FS
+var k3ssCtx = k3sscripts.NewContext(manifests)
+
 var commandMap = map[args.CommandName]func() error{
 	args.GlobalCommand: func() error {
 		args.HelpPrint(args.GlobalCommand)
 		return nil
 	},
 	args.ClusterCommand: func() error {
-		err := k3sscripts.DeployK3sCluster()
+		err := k3ssCtx.DeployK3sCluster()
 		if err != nil {
 			return err
 		}
 		return nil
 	},
 	args.DeployCommand: func() error {
-		fmt.Println("Deploying two pods: MySQL and WordPress")
+		err := k3ssCtx.GenerateManifests()
+		if err != nil {
+			return err
+		}
+		defer k3ssCtx.CleanupTempFiles()
+
 		return nil
 	},
 	args.StatusCommand: func() error {
@@ -29,7 +39,7 @@ var commandMap = map[args.CommandName]func() error{
 		return nil
 	},
 	args.RemoveCommand: func() error {
-		err := k3sscripts.RemoveK3sCluster()
+		err := k3ssCtx.RemoveK3sCluster()
 		if err != nil {
 			return err
 		}
@@ -38,7 +48,6 @@ var commandMap = map[args.CommandName]func() error{
 }
 
 func main() {
-	// Pass command-line arguments (excluding program name) to ParseArgs
 	inputArgs := os.Args[1:]
 	err := args.ParseArgs(inputArgs, commandMap)
 	if err != nil {

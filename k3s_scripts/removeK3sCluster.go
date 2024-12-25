@@ -6,7 +6,7 @@ import (
 	"os/exec"
 )
 
-func RemoveK3sCluster() K3sError {
+func (ctx *Context) RemoveK3sCluster() K3sError {
 	fmt.Println("Removing k3s cluster...")
 
 	if !CheckK3sInstalled() {
