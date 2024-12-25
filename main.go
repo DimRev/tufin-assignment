@@ -26,11 +26,10 @@ var commandMap = map[args.CommandName]func() error{
 		return nil
 	},
 	args.DeployCommand: func() error {
-		err := k3ssCtx.GenerateManifests()
+		err := k3ssCtx.DeployK3sPods()
 		if err != nil {
 			return err
 		}
-		defer k3ssCtx.CleanupTempFiles()
 
 		return nil
 	},

@@ -14,13 +14,26 @@ spec:
     spec:
       containers:
       - name: mysql
-        image: {{ .Mysql.Image }}
-        env:
-        - name: MYSQL_ROOT_PASSWORD
-          value: {{ .Mysql.RootPassword }}
-        - name: MYSQL_DATABASE
-          value: {{ .Mysql.Database }}
-        - name: MYSQL_USER
-          value: {{ .Mysql.User }}
-        - name: MYSQL_PASSWORD
-          value: {{ .Mysql.Password }}
+        image: mysql:5.7
+        envFrom:
+        - configMapRef:
+            name: mysql-config
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-data
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: mysql-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  ports:
+  - name: mysql
+    port: 3306
+    targetPort: 3306
+  selector:
+    app: mysql
