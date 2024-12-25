@@ -44,24 +44,24 @@ func (ctx *Context) GenerateManifests() error {
 	return nil
 }
 
-func (ctx *Context) loadDefaultValues() (Values, error) {
+func (ctx *Context) loadDefaultValues() (Values, K3sError) {
 	data, err := ctx.manifests.ReadFile("manifests/default-values.yaml")
 	if err != nil {
-		return Values{}, fmt.Errorf("failed to read default values: %w", err)
+		return Values{}, NewYAMLFilesNotFound("manifests/default-values.yaml", err.Error())
 	}
 
 	var v Values
 	if err := yaml.Unmarshal(data, &v); err != nil {
-		return Values{}, fmt.Errorf("failed to parse default values: %w", err)
+		return Values{}, NewYAMLUnmarshalError(fmt.Sprintf("failed to parse default values: %w", err))
 	}
 
 	return v, nil
 }
 
-func (ctx *Context) renderAndSaveManifests(values Values) error {
+func (ctx *Context) renderAndSaveManifests(values Values) K3sError {
 	tempDir := filepath.Join(os.TempDir(), "tufin-assignment")
 	if err := os.MkdirAll(tempDir, os.ModePerm); err != nil {
-		return fmt.Errorf("failed to create tmp directory: %w", err)
+		return NewDirCreationError(filepath.Join(os.TempDir(), "tufin-assignment"), err.Error())
 	}
 
 	manifestFiles := []string{
@@ -72,17 +72,17 @@ func (ctx *Context) renderAndSaveManifests(values Values) error {
 	for _, filePath := range manifestFiles {
 		templateData, err := ctx.manifests.ReadFile(filePath)
 		if err != nil {
-			return fmt.Errorf("failed to read manifest file %s: %w", filePath, err)
+			return NewFileReadError(filePath, err.Error())
 		}
 
 		renderedData, err := renderTemplate(string(templateData), values)
 		if err != nil {
-			return fmt.Errorf("failed to render template for %s: %w", filePath, err)
+			return NewFileRenderError(filePath, err.Error())
 		}
 
 		outputFilePath := filepath.Join(tempDir, filepath.Base(filePath))
 		if err := os.WriteFile(outputFilePath, []byte(renderedData), 0644); err != nil {
-			return fmt.Errorf("failed to write rendered manifest to %s: %w", outputFilePath, err)
+			return NewFileWriteError(outputFilePath, err.Error())
 		}
 
 		ctx.tempFiles = append(ctx.tempFiles, outputFilePath)

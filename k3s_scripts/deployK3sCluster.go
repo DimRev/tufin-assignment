@@ -10,7 +10,7 @@ import (
 
 func (ctx *Context) DeployK3sCluster() K3sError {
 	if os.Geteuid() != 0 {
-		return UnauthorizedError{Message: "You must run this script as root"}
+		return NewUnauthorizedError("You must run this script as root")
 	}
 
 	fmt.Println("Checking if k3s is already installed...")
@@ -24,14 +24,14 @@ func (ctx *Context) DeployK3sCluster() K3sError {
 		cmd.Stderr = os.Stderr
 
 		if err := cmd.Run(); err != nil {
-			return K3sNotInstalledError{Message: err.Error()}
+			return NewK3sNotInstalledError(err.Error())
 		}
 	}
 
 	fmt.Println("Waiting for the k3s cluster to become ready...")
 
 	if err := ctx.waitForClusterReady(); err != nil {
-		return K3sNotRunningError{Message: err.Error()}
+		return NewK3sNotRunningError(err.Error())
 	}
 
 	fmt.Println("k3s cluster deployed and running successfully.")
@@ -58,5 +58,5 @@ func (ctx *Context) waitForClusterReady() error {
 		time.Sleep(retryDelay)
 	}
 
-	return K3sClusterNotReadyError{Message: fmt.Sprintf("Cluster not ready after %d seconds", maxRetries*retryDelay)}
+	return NewK3sClusterNotReadyError(fmt.Sprintf("Cluster not ready after %d seconds", maxRetries*retryDelay))
 }

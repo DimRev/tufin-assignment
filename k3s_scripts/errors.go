@@ -1,105 +1,123 @@
 package k3sscripts
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type K3sError interface {
 	Error() string
 	K3sError() string
 }
 
-type UnauthorizedError struct {
+type GenericK3sError struct {
 	Message string
 }
 
-func (e UnauthorizedError) Error() string {
-	return fmt.Sprintf("Unauthorized: %s", e.Message)
+func (e GenericK3sError) Error() string {
+	return e.Message
 }
 
-func (e UnauthorizedError) K3sError() string {
-	return fmt.Sprintf("Unauthorized: %s", e.Message)
+func (e GenericK3sError) K3sError() string {
+	return e.Message
+}
+
+type UnauthorizedError struct {
+	GenericK3sError
 }
 
 type K3sNotInstalledError struct {
-	Message string
-}
-
-func (e K3sNotInstalledError) Error() string {
-	return fmt.Sprintf("K3s not installed: %s", e.Message)
-}
-
-func (e K3sNotInstalledError) K3sError() string {
-	return fmt.Sprintf("K3s not installed: %s", e.Message)
+	GenericK3sError
 }
 
 type K3sNotRunningError struct {
-	Message string
-}
-
-func (e K3sNotRunningError) Error() string {
-	return fmt.Sprintf("K3s not running: %s", e.Message)
-}
-
-func (e K3sNotRunningError) K3sError() string {
-	return fmt.Sprintf("K3s not running: %s", e.Message)
+	GenericK3sError
 }
 
 type K3sClusterNotReadyError struct {
-	Message string
-}
-
-func (e K3sClusterNotReadyError) Error() string {
-	return fmt.Sprintf("K3s cluster not ready: %s", e.Message)
-}
-
-func (e K3sClusterNotReadyError) K3sError() string {
-	return fmt.Sprintf("K3s cluster not ready: %s", e.Message)
+	GenericK3sError
 }
 
 type YAMLFilesNotFound struct {
+	GenericK3sError
 	FileName string
-	Message  string
-}
-
-func (e YAMLFilesNotFound) Error() string {
-	return fmt.Sprintf("YAML files %s not found: %s", e.FileName, e.Message)
-}
-
-func (e YAMLFilesNotFound) K3sError() string {
-	return fmt.Sprintf("YAML files %s not found: %s", e.FileName, e.Message)
 }
 
 type YAMLUnmarshalError struct {
-	Message string
+	GenericK3sError
 }
 
-func (e YAMLUnmarshalError) Error() string {
-	return fmt.Sprintf("Error unmarshalling YAML: %s", e.Message)
+type DirCreationError struct {
+	GenericK3sError
+	DirName string
 }
 
-func (e YAMLUnmarshalError) K3sError() string {
-	return fmt.Sprintf("Error unmarshalling YAML: %s", e.Message)
+type FileReadError struct {
+	GenericK3sError
+	FileName string
+}
+
+type FileRenderError struct {
+	GenericK3sError
+	FileName string
+}
+
+type FileWriteError struct {
+	GenericK3sError
+	FileName string
 }
 
 type YAMLMarshalError struct {
-	Message string
-}
-
-func (e YAMLMarshalError) Error() string {
-	return fmt.Sprintf("Error marshalling YAML: %s", e.Message)
-}
-
-func (e YAMLMarshalError) K3sError() string {
-	return fmt.Sprintf("Error marshalling YAML: %s", e.Message)
+	GenericK3sError
 }
 
 type ValuesReplacementError struct {
-	Message string
+	GenericK3sError
 }
 
-func (e ValuesReplacementError) Error() string {
-	return fmt.Sprintf("Error replacing values: %s", e.Message)
+func NewUnauthorizedError(message string) K3sError {
+	return &UnauthorizedError{GenericK3sError{Message: fmt.Sprintf("K3UnauthorizedError: %s", message)}}
 }
 
-func (e ValuesReplacementError) K3sError() string {
-	return fmt.Sprintf("Error replacing values: %s", e.Message)
+func NewK3sNotInstalledError(message string) K3sError {
+	return &K3sNotInstalledError{GenericK3sError{Message: fmt.Sprintf("K3InstallError: %s", message)}}
+}
+
+func NewK3sNotRunningError(message string) K3sError {
+	return &K3sNotRunningError{GenericK3sError{Message: fmt.Sprintf("K3NotRunning: %s", message)}}
+}
+
+func NewK3sClusterNotReadyError(message string) K3sError {
+	return &K3sClusterNotReadyError{GenericK3sError{Message: fmt.Sprintf("K3ClusterNotReady: %s", message)}}
+}
+
+func NewYAMLFilesNotFound(fileName, message string) K3sError {
+	return &YAMLFilesNotFound{GenericK3sError{Message: fmt.Sprintf("K3FileNotFound: %s, Details: %s", fileName, message)}, fileName}
+}
+
+func NewYAMLUnmarshalError(message string) K3sError {
+	return &YAMLUnmarshalError{GenericK3sError{Message: fmt.Sprintf("K3UnmarshalError: %s", message)}}
+}
+
+func NewDirCreationError(fileName, message string) K3sError {
+	return &DirCreationError{GenericK3sError{Message: fmt.Sprintf("K3CreateDirError: %s, Details: %s", fileName, message)}, fileName}
+}
+
+func NewFileReadError(fileName, message string) K3sError {
+	return &FileReadError{GenericK3sError{Message: fmt.Sprintf("K3ReadFileError: %s, Details: %s", fileName, message)}, fileName}
+}
+
+func NewFileRenderError(fileName, message string) K3sError {
+	return &FileRenderError{GenericK3sError{Message: fmt.Sprintf("K3RenderFileError: %s, Details: %s", fileName, message)}, fileName}
+}
+
+func NewFileWriteError(fileName, message string) K3sError {
+	return &FileWriteError{GenericK3sError{Message: fmt.Sprintf("K3WriteFileError: %s, Details: %s", fileName, message)}, fileName}
+}
+
+func NewYAMLMarshalError(message string) K3sError {
+	return &YAMLMarshalError{GenericK3sError{Message: fmt.Sprintf("K3MarshalError: %s", message)}}
+}
+
+func NewValuesReplacementError(message string) K3sError {
+	return &ValuesReplacementError{GenericK3sError{Message: fmt.Sprintf("K3ValuesReplacementError: %s", message)}}
 }
