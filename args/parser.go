@@ -5,13 +5,13 @@ import (
 	"os"
 )
 
-func getCommand(name CommandName) (Command, error) {
+func getCommand(name CommandName) (Command, ArgErrors) {
 	for _, c := range Commands {
 		if c.Name == name {
 			return c, nil
 		}
 	}
-	return Command{}, CommandNotFoundError{CommandName: string(name)}
+	return Command{}, NewCommandNotFoundError(string(name))
 }
 
 func HelpPrint(cn CommandName) {
@@ -78,7 +78,7 @@ func ParseArgs(args []string, commandMap map[CommandName]func() error) error {
 
 	c, err := getCommand(command)
 	if err != nil {
-		return CommandNotFoundError{CommandName: string(command)}
+		return NewCommandNotFoundError(string(command))
 	}
 
 	executeFunc, exists := commandMap[command]
@@ -94,11 +94,12 @@ func ParseArgs(args []string, commandMap map[CommandName]func() error) error {
 func parseCommandArgs(args []string, c Command, executeFunc func() error) error {
 	if len(args) == 0 {
 		err := executeFunc()
+		// Command Executions are K3sScript Errors
 		return err
 	}
 
 	if len(c.Flags) == 0 && len(args) > 0 {
-		return UnknownArgsError{Args: args, Command: c.Name}
+		return NewUnknownArgsError(args, c.Name)
 	}
 
 	// Placeholder if we want to add flag logic
@@ -107,7 +108,7 @@ func parseCommandArgs(args []string, c Command, executeFunc func() error) error 
 			HelpPrint(c.Name)
 			return nil
 		} else {
-			return UnknownArgsError{Args: args, Command: c.Name}
+			return NewUnknownArgsError(args, c.Name)
 		}
 	}
 

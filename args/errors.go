@@ -6,43 +6,63 @@ import (
 )
 
 type ArgErrors interface {
-	ArgError() error
+	Error() string
+	ArgErrors() string
+	Code() int
+}
+
+type GenericArgErrors struct {
+	Message    string
+	StatusCode int
+}
+
+func (e GenericArgErrors) Error() string {
+	return e.Message
+}
+
+func (e GenericArgErrors) ArgErrors() string {
+	return e.Message
+}
+
+func (e GenericArgErrors) Code() int {
+	return e.StatusCode
 }
 
 type CommandNotFoundError struct {
-	CommandName string
-}
-
-func (e CommandNotFoundError) Error() string {
-	return fmt.Sprintf("Command %s not found", e.CommandName)
-}
-
-func (e CommandNotFoundError) ArgError() string {
-	return fmt.Sprintf("Command %s not found", e.CommandName)
+	GenericArgErrors
 }
 
 type InvalidFlagError struct {
-	FlagName string
-	Command  CommandName
-}
-
-func (e InvalidFlagError) Error() string {
-	return fmt.Sprintf("Invalid flag '%s' for command '%s'", e.FlagName, e.Command)
-}
-
-func (e InvalidFlagError) ArgError() string {
-	return fmt.Sprintf("Invalid flag '%s' for command '%s'", e.FlagName, e.Command)
+	GenericArgErrors
 }
 
 type UnknownArgsError struct {
-	Args    []string
-	Command CommandName
+	GenericArgErrors
 }
 
-func (e UnknownArgsError) Error() string {
-	return fmt.Sprintf("Unknown arguments '%s' for command '%s'", strings.Join(e.Args, ", "), e.Command)
+func NewCommandNotFoundError(commandName string) ArgErrors {
+	return &CommandNotFoundError{
+		GenericArgErrors{
+			Message:    fmt.Sprintf("ArgsCommandNotFound: %s", commandName),
+			StatusCode: 101,
+		},
+	}
 }
 
-func (e UnknownArgsError) ArgError() string {
-	return fmt.Sprintf("Unknown arguments '%s' for command '%s'", strings.Join(e.Args, ", "), e.Command)
+func NewInvalidFlagError(flagName string, command CommandName) ArgErrors {
+	return &InvalidFlagError{
+		GenericArgErrors{
+			Message:    fmt.Sprintf("ArgsInvalidFlag: %s, for command '%s'", flagName, command),
+			StatusCode: 102,
+		},
+	}
+}
+
+func NewUnknownArgsError(args []string, command CommandName) ArgErrors {
+	return &UnknownArgsError{
+		GenericArgErrors{
+			Message:    fmt.Sprintf("ArgsUnknownArgs: %s, for command '%s'", strings.Join(args, ", "), command),
+			StatusCode: 103,
+		},
+	}
 }
