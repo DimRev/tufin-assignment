@@ -10,6 +10,7 @@ type Flag struct {
 	Long        string
 	Short       string
 	Description string
+	HasArg      bool
 }
 
 type CommandName string
@@ -22,6 +23,8 @@ var (
 	RemoveCommand  CommandName = "remove"
 )
 
+type ExecutionFunc func(flags map[string]string) error
+
 var Commands = []Command{
 	{
 		Name:        GlobalCommand,
@@ -31,11 +34,13 @@ var Commands = []Command{
 				Long:        "--help",
 				Short:       "-h",
 				Description: "Print any command",
+				HasArg:      false,
 			},
 			{
 				Long:        "--version",
 				Short:       "-v",
 				Description: "Print the version of the program",
+				HasArg:      false,
 			},
 		},
 	},
@@ -47,6 +52,7 @@ var Commands = []Command{
 				Long:        "--help",
 				Short:       "-h",
 				Description: "Print details about this command",
+				HasArg:      false,
 			},
 		},
 	},
@@ -58,6 +64,7 @@ var Commands = []Command{
 				Long:        "--help",
 				Short:       "-h",
 				Description: "Print details about this command",
+				HasArg:      false,
 			},
 		},
 	},
@@ -69,6 +76,31 @@ var Commands = []Command{
 				Long:        "--help",
 				Short:       "-h",
 				Description: "Print details about this command",
+				HasArg:      false,
+			},
+			{
+				Long:        "--namespace",
+				Short:       "-n",
+				Description: "The namespace to use",
+				HasArg:      true,
+			},
+			{
+				Long:        "--pod",
+				Short:       "-p",
+				Description: "Show the status of the pods in the given(or default) namespace. If this flag is not set, the status of all pods in the namespace will be shown.",
+				HasArg:      false,
+			},
+			{
+				Long:        "--service",
+				Short:       "-s",
+				Description: "Show the status of the services in the given(or default) namespace. If this flag is not set, the status of all services in the namespace will be shown.",
+				HasArg:      false,
+			},
+			{
+				Long:        "--volume",
+				Short:       "-v",
+				Description: "Show the status of the PersistentVolumeClaims in the given(or default) namespace. If this flag is not set, the status of all PVCs in the namespace will be shown.",
+				HasArg:      false,
 			},
 		},
 	},
@@ -80,6 +112,7 @@ var Commands = []Command{
 				Long:        "--help",
 				Short:       "-h",
 				Description: "Print details about this command",
+				HasArg:      false,
 			},
 		},
 	},

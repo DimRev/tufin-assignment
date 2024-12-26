@@ -59,7 +59,7 @@ func printFlags(flags []Flag) {
 	}
 }
 
-func ParseArgs(args []string, commandMap map[CommandName]func() error) error {
+func ParseArgs(args []string, commandMap map[CommandName]ExecutionFunc) error {
 	if len(args) < 1 {
 		HelpPrint(GlobalCommand)
 		return nil
@@ -91,28 +91,59 @@ func ParseArgs(args []string, commandMap map[CommandName]func() error) error {
 	return parseCommandArgs(args[1:], c, executeFunc)
 }
 
-func parseCommandArgs(args []string, c Command, executeFunc func() error) error {
-	if len(args) == 0 {
-		err := executeFunc()
-		// Command Executions are K3sScript Errors
-		return err
-	}
+func parseCommandArgs(args []string, c Command, executeFunc ExecutionFunc) error {
+	flagValues := make(map[string]string)
 
-	if len(c.Flags) == 0 && len(args) > 0 {
-		return NewUnknownArgsError(args, c.Name)
-	}
+	originalArgs := args
 
-	// Placeholder if we want to add flag logic
-	for _, arg := range args {
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
 		if arg == "--help" || arg == "-h" {
 			HelpPrint(c.Name)
 			return nil
+		}
+
+		if len(arg) > 1 && arg[0] == '-' {
+			if len(arg) == 2 {
+				flag := arg[1:]
+				matchedFlag, hasArg := matchFlag(c.Flags, flag)
+				if matchedFlag == "" {
+					return NewUnknownArgsError([]string{arg}, c.Name)
+				}
+				if hasArg {
+					if i+1 >= len(args) {
+						return NewFlagArgMissing(arg, c.Name)
+					}
+					flagValues[matchedFlag] = args[i+1]
+					i++
+				} else {
+					flagValues[matchedFlag] = "true"
+				}
+			} else {
+				for _, ch := range arg[1:] {
+					flag := string(ch)
+					matchedFlag, hasArg := matchFlag(c.Flags, flag)
+					if matchedFlag == "" || hasArg {
+						return NewFlagCombinationError(originalArgs, c.Name)
+					}
+					flagValues[matchedFlag] = "true"
+				}
+			}
 		} else {
-			return NewUnknownArgsError(args, c.Name)
+			return NewUnknownArgsError([]string{arg}, c.Name)
 		}
 	}
 
-	return nil
+	return executeFunc(flagValues)
+}
+
+func matchFlag(flags []Flag, short string) (string, bool) {
+	for _, f := range flags {
+		if f.Short == "-"+short {
+			return f.Long, f.HasArg
+		}
+	}
+	return "", false
 }
 
 func printVersion() {
