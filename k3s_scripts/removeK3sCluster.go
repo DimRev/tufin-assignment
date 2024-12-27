@@ -13,8 +13,9 @@ func (ctx *Context) RemoveK3sCluster() K3sError {
 		return NewK3sNotInstalledError("K3 is not installed")
 	}
 
-	if os.Geteuid() != 0 {
-		return NewUnauthorizedError("You must run this script as root")
+	err := CheckRootUser()
+	if err != nil {
+		return err
 	}
 
 	uninstallScript := "/usr/local/bin/k3s-uninstall.sh"

@@ -9,8 +9,9 @@ import (
 )
 
 func (ctx *Context) DeployK3sCluster() K3sError {
-	if os.Geteuid() != 0 {
-		return NewUnauthorizedError("You must run this script as root")
+	err := CheckRootUser()
+	if err != nil {
+		return err
 	}
 
 	fmt.Println("Checking if k3s is already installed...")

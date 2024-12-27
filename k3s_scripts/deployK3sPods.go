@@ -2,7 +2,6 @@ package k3sscripts
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 )
 
@@ -11,11 +10,12 @@ func (ctx *Context) DeployK3sPods() K3sError {
 		return NewK3sNotInstalledError("k3s is not installed or not running. Please ensure the cluster is deployed.")
 	}
 
-	if os.Geteuid() != 0 {
-		return NewUnauthorizedError("You must run this script as root")
+	err := CheckRootUser()
+	if err != nil {
+		return err
 	}
 
-	err := ctx.GenerateManifests()
+	err = ctx.GenerateManifests()
 	defer ctx.CleanupTempFiles()
 	if err != nil {
 		return err
