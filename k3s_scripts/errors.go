@@ -15,6 +15,21 @@ type GenericK3sError struct {
 	StatusCode int
 }
 
+const (
+	UnauthorizedErrorCode       = 201
+	K3sNotInstalledErrorCode    = 202
+	K3sNotRunningErrorCode      = 203
+	K3sClusterNotReadyErrorCode = 204
+	YAMLFilesNotFoundErrorCode  = 205
+	YAMLUnmarshalErrorCode      = 206
+	DirCreationErrorCode        = 207
+	FileReadErrorCode           = 208
+	FileRenderErrorCode         = 209
+	FileWriteErrorCode          = 210
+	YAMLMarshalErrorCode        = 211
+	ValuesReplacementErrorCode  = 212
+)
+
 func (e GenericK3sError) Error() string {
 	return e.Message
 }
@@ -84,7 +99,7 @@ func NewUnauthorizedError(message string) K3sError {
 	return &UnauthorizedError{
 		GenericK3sError{
 			Message:    fmt.Sprintf("K3UnauthorizedError: %s", message),
-			StatusCode: 201,
+			StatusCode: UnauthorizedErrorCode,
 		},
 	}
 }
@@ -93,7 +108,7 @@ func NewK3sNotInstalledError(message string) K3sError {
 	return &K3sNotInstalledError{
 		GenericK3sError{
 			Message:    fmt.Sprintf("K3InstallError: %s", message),
-			StatusCode: 202,
+			StatusCode: K3sNotInstalledErrorCode,
 		},
 	}
 }
@@ -102,7 +117,7 @@ func NewK3sNotRunningError(message string) K3sError {
 	return &K3sNotRunningError{
 		GenericK3sError{
 			Message:    fmt.Sprintf("K3NotRunning: %s", message),
-			StatusCode: 203,
+			StatusCode: K3sNotRunningErrorCode,
 		},
 	}
 }
@@ -111,7 +126,7 @@ func NewK3sClusterNotReadyError(message string) K3sError {
 	return &K3sClusterNotReadyError{
 		GenericK3sError{
 			Message:    fmt.Sprintf("K3ClusterNotReady: %s", message),
-			StatusCode: 204,
+			StatusCode: K3sClusterNotReadyErrorCode,
 		},
 	}
 }
@@ -120,7 +135,7 @@ func NewYAMLFilesNotFound(fileName, message string) K3sError {
 	return &YAMLFilesNotFound{
 		GenericK3sError{
 			Message:    fmt.Sprintf("K3FileNotFound: %s", fileName),
-			StatusCode: 205,
+			StatusCode: YAMLFilesNotFoundErrorCode,
 		},
 		fileName,
 	}
@@ -130,7 +145,7 @@ func NewYAMLUnmarshalError(message string) K3sError {
 	return &YAMLUnmarshalError{
 		GenericK3sError{
 			Message:    fmt.Sprintf("K3UnmarshalError: %s", message),
-			StatusCode: 206,
+			StatusCode: YAMLUnmarshalErrorCode,
 		},
 	}
 }
@@ -139,7 +154,7 @@ func NewDirCreationError(fileName, message string) K3sError {
 	return &DirCreationError{
 		GenericK3sError{
 			Message:    fmt.Sprintf("K3CreateDirError: %s, Details: %s", fileName, message),
-			StatusCode: 207,
+			StatusCode: DirCreationErrorCode,
 		},
 		fileName,
 	}
@@ -149,7 +164,7 @@ func NewFileReadError(fileName, message string) K3sError {
 	return &FileReadError{
 		GenericK3sError{
 			Message:    fmt.Sprintf("K3ReadFileError: %s, Details: %s", fileName, message),
-			StatusCode: 208,
+			StatusCode: FileReadErrorCode,
 		},
 		fileName,
 	}
@@ -159,7 +174,7 @@ func NewFileRenderError(fileName, message string) K3sError {
 	return &FileRenderError{
 		GenericK3sError{
 			Message:    fmt.Sprintf("K3RenderFileError: %s, Details: %s", fileName, message),
-			StatusCode: 209,
+			StatusCode: FileRenderErrorCode,
 		},
 		fileName,
 	}
@@ -168,7 +183,7 @@ func NewFileRenderError(fileName, message string) K3sError {
 func NewFileWriteError(fileName, message string) K3sError {
 	return &FileWriteError{
 		GenericK3sError{Message: fmt.Sprintf("K3WriteFileError: %s, Details: %s", fileName, message),
-			StatusCode: 210,
+			StatusCode: FileWriteErrorCode,
 		},
 		fileName,
 	}
@@ -178,7 +193,7 @@ func NewYAMLMarshalError(message string) K3sError {
 	return &YAMLMarshalError{
 		GenericK3sError{
 			Message:    fmt.Sprintf("K3MarshalError: %s", message),
-			StatusCode: 211,
+			StatusCode: YAMLMarshalErrorCode,
 		},
 	}
 }
@@ -186,7 +201,8 @@ func NewYAMLMarshalError(message string) K3sError {
 func NewValuesReplacementError(message string) K3sError {
 	return &ValuesReplacementError{
 		GenericK3sError{
-			Message: fmt.Sprintf("K3ValuesReplacementError: %s", message),
+			Message:    fmt.Sprintf("K3ValuesReplacementError: %s", message),
+			StatusCode: ValuesReplacementErrorCode,
 		},
 	}
 }

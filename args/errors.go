@@ -16,6 +16,14 @@ type GenericArgErrors struct {
 	StatusCode int
 }
 
+const (
+	CommandNotFoundErrorCode = 101
+	InvalidFlagErrorCode     = 102
+	UnknownArgsErrorCode     = 103
+	FlagArgMissingErrorCode  = 104
+	FlagCombinationErrorCode = 105
+)
+
 func (e GenericArgErrors) Error() string {
 	return e.Message
 }
@@ -52,7 +60,7 @@ func NewCommandNotFoundError(commandName string) ArgErrors {
 	return &CommandNotFoundError{
 		GenericArgErrors{
 			Message:    fmt.Sprintf("ArgsCommandNotFound: %s", commandName),
-			StatusCode: 101,
+			StatusCode: CommandNotFoundErrorCode,
 		},
 	}
 }
@@ -61,7 +69,7 @@ func NewInvalidFlagError(flagName string, command CommandName) ArgErrors {
 	return &InvalidFlagError{
 		GenericArgErrors{
 			Message:    fmt.Sprintf("ArgsInvalidFlag: %s, for command '%s'", flagName, command),
-			StatusCode: 102,
+			StatusCode: InvalidFlagErrorCode,
 		},
 	}
 }
@@ -70,7 +78,7 @@ func NewUnknownArgsError(args []string, command CommandName) ArgErrors {
 	return &UnknownArgsError{
 		GenericArgErrors{
 			Message:    fmt.Sprintf("ArgsUnknownArgs: %s, for command '%s'", strings.Join(args, ", "), command),
-			StatusCode: 103,
+			StatusCode: UnknownArgsErrorCode,
 		},
 	}
 }
@@ -79,7 +87,7 @@ func NewFlagArgMissing(flag string, command CommandName) ArgErrors {
 	return &FlagArgMissing{
 		GenericArgErrors{
 			Message:    fmt.Sprintf("ArgsFlagArgsMissing: %s, for command '%s'", flag, command),
-			StatusCode: 104,
+			StatusCode: FlagArgMissingErrorCode,
 		},
 	}
 }
@@ -88,7 +96,7 @@ func NewFlagCombinationError(args []string, command CommandName) ArgErrors {
 	return &FlagCombinationError{
 		GenericArgErrors{
 			Message:    fmt.Sprintf("ArgsFlagCombinationError: %s, for command '%s'", strings.Join(args, ", "), command),
-			StatusCode: 105,
+			StatusCode: FlagCombinationErrorCode,
 		},
 	}
 }
