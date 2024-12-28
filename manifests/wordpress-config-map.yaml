@@ -4,8 +4,8 @@ metadata:
   name: wordpress-config
 data:
   WORDPRESS_DB_HOST: mysql
-  WORDPRESS_DB_PORT: "3306"
+  WORDPRESS_DB_PORT: '3306'
   WORDPRESS_DB_USER: wordpress
   WORDPRESS_DB_PASSWORD: wordpresspassword
   WORDPRESS_DB_NAME: wordpress
-  WORDPRESS_PORT: "80"
+  WORDPRESS_PORT: '80'

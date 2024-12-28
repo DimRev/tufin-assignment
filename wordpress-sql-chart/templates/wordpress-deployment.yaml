@@ -1,40 +1,40 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wordpress
+  name: {{ .Values.wordpress.name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.wordpress.replicas }}
   selector:
     matchLabels:
-      app: wordpress
+      app: {{ .Values.wordpress.name }}
   template:
     metadata:
       labels:
-        app: wordpress
+        app: {{ .Values.wordpress.name }}
     spec:
       containers:
         - name: wordpress
-          image: wordpress:latest
+          image: {{ .Values.wordpress.image }}
           envFrom:
             - configMapRef:
-                name: wordpress-config
+                name: {{ .Values.wordpress.configMap.name }}
           volumeMounts:
             - mountPath: /var/www/html
               name: wordpress-data
       volumes:
         - name: wordpress-data
           persistentVolumeClaim:
-            claimName: wordpress-pvc
+            claimName: {{ .Values.wordpress.pvc.name }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: wordpress
+  name: {{ .Values.wordpress.name }}
 spec:
   type: LoadBalancer
   ports:
     - name: http
-      port: 80
-      targetPort: 80
+      port: {{ .Values.wordpress.port }}
+      targetPort: {{ .Values.wordpress.port }}
   selector:
-    app: wordpress
+    app: {{ .Values.wordpress.name }}
