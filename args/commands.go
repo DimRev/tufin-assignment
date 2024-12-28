@@ -66,6 +66,12 @@ var Commands = []Command{
 				Description: "Print details about this command",
 				HasArg:      false,
 			},
+			{
+				Long:        "--helm",
+				Short:       "-e",
+				Description: "Deploy the helm chart",
+				HasArg:      false,
+			},
 		},
 	},
 	{

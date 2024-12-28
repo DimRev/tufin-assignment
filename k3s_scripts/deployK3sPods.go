@@ -5,7 +5,7 @@ import (
 	"os/exec"
 )
 
-func (ctx *Context) DeployK3sPods() K3sError {
+func (ctx *Context) DeployK3sPodsSlim() K3sError {
 	if !CheckK3sInstalled() {
 		return NewK3sNotInstalledError("k3s is not installed or not running. Please ensure the cluster is deployed.")
 	}
@@ -35,5 +35,39 @@ func (ctx *Context) DeployK3sPods() K3sError {
 	}
 
 	fmt.Println("All manifests applied successfully.")
+	return nil
+}
+
+func (ctx *Context) DeployK3sPodsHelm() K3sError {
+	if !CheckK3sInstalled() {
+		return NewK3sNotInstalledError("k3s is not installed or not running. Please ensure the cluster is deployed.")
+	}
+
+	err := CheckRootUser()
+	if err != nil {
+		return err
+	}
+
+	if !CheckHelmInstalled() {
+		return NewHelmInstallError("helm is not installed. Please ensure helm is installed.")
+	}
+
+	err = ctx.GenerateHelmChart()
+	defer ctx.CleanupTempFiles()
+	if err != nil {
+		return err
+	}
+
+	if len(ctx.tempFiles) != 1 {
+		return NewYAMLFilesNotFound(
+			"wordpress-sql-1.0.0.tgz",
+			fmt.Sprintf("expected 1 file, found %d", len(ctx.tempFiles)),
+		)
+	}
+
+	helmChartPath := ctx.tempFiles[0]
+
+	fmt.Printf("Deploying helm chart: %s\n", helmChartPath)
+
 	return nil
 }

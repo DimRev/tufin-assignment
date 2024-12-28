@@ -47,7 +47,16 @@ func newCommandMap(k3ssCtx *k3sscripts.Context) map[args.CommandName]args.Execut
 			return nil
 		},
 		args.DeployCommand: func(flags map[string]string) error {
-			err := k3ssCtx.DeployK3sPods()
+			isHelm := flags["--helm"] == "true"
+			if isHelm {
+				err := k3ssCtx.DeployK3sPodsHelm()
+				if err != nil {
+					return err
+				}
+				return nil
+			}
+
+			err := k3ssCtx.DeployK3sPodsSlim()
 			if err != nil {
 				return err
 			}

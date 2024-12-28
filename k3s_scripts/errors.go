@@ -28,6 +28,8 @@ const (
 	FileWriteErrorCode          = 210
 	YAMLMarshalErrorCode        = 211
 	ValuesReplacementErrorCode  = 212
+	HelmInstallErrorCode        = 213
+	HelmUninstallErrorCode      = 214
 )
 
 func (e GenericK3sError) Error() string {
@@ -92,6 +94,14 @@ type YAMLMarshalError struct {
 }
 
 type ValuesReplacementError struct {
+	GenericK3sError
+}
+
+type HelmInstallError struct {
+	GenericK3sError
+}
+
+type HelmUninstallError struct {
 	GenericK3sError
 }
 
@@ -203,6 +213,24 @@ func NewValuesReplacementError(message string) K3sError {
 		GenericK3sError{
 			Message:    fmt.Sprintf("K3ValuesReplacementError: %s", message),
 			StatusCode: ValuesReplacementErrorCode,
+		},
+	}
+}
+
+func NewHelmInstallError(message string) K3sError {
+	return &HelmInstallError{
+		GenericK3sError{
+			Message:    fmt.Sprintf("K3HelmInstallError: %s", message),
+			StatusCode: HelmInstallErrorCode,
+		},
+	}
+}
+
+func NewHelmUninstallError(message string) K3sError {
+	return &HelmUninstallError{
+		GenericK3sError{
+			Message:    fmt.Sprintf("K3HelmUninstallError: %s", message),
+			StatusCode: HelmUninstallErrorCode,
 		},
 	}
 }

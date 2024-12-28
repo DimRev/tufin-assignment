@@ -18,6 +18,12 @@ func (ctx *Context) RemoveK3sCluster() K3sError {
 		return err
 	}
 
+	err = ctx.RemoveHelmChart()
+	if err != nil {
+		fmt.Println("Failed to remove Helm chart. Continuing with k3s cluster removal...")
+		fmt.Println(err)
+	}
+
 	uninstallScript := "/usr/local/bin/k3s-uninstall.sh"
 	if _, err := os.Stat(uninstallScript); os.IsNotExist(err) {
 		return NewK3sNotInstalledError("Uninstall script not found. Is k3s installed?")
