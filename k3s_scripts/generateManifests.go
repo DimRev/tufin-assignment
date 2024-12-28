@@ -32,6 +32,26 @@ func (ctx *Context) GenerateManifests() K3sError {
 	return nil
 }
 
+func (ctx *Context) GenerateHelmChart() K3sError {
+	tempDir := filepath.Join(os.TempDir(), "tufin-assignment")
+	if err := os.MkdirAll(tempDir, os.ModePerm); err != nil {
+		return NewDirCreationError(filepath.Join(os.TempDir(), "tufin-assignment"), fmt.Sprintf("failed to create temp directory: %s", err.Error()))
+	}
+
+	manifestFiles := []string{
+		"manifests/wordpress-sql-1.0.0.tgz",
+	}
+
+	for _, filePath := range manifestFiles {
+		if err := ctx.renderAndSaveManifest(filePath, tempDir); err != nil {
+			return err
+		}
+	}
+
+	fmt.Println("Manifests successfully generated and saved to the OS temp directory.")
+	return nil
+}
+
 func (ctx *Context) renderAndSaveManifest(filePath string, tempDir string) K3sError {
 	templateData, err := ctx.manifests.ReadFile(filePath)
 	if err != nil {

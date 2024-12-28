@@ -13,18 +13,18 @@ spec:
         app: wordpress
     spec:
       containers:
-      - name: wordpress
-        image: wordpress:latest
-        envFrom:
-        - configMapRef:
-            name: wordpress-config
-        volumeMounts:
-        - mountPath: /var/www/html
-          name: wordpress-data
+        - name: wordpress
+          image: wordpress:latest
+          envFrom:
+            - configMapRef:
+                name: wordpress-config
+          volumeMounts:
+            - mountPath: /var/www/html
+              name: wordpress-data
       volumes:
-      - name: wordpress-data
-        persistentVolumeClaim:
-          claimName: wordpress-pvc
+        - name: wordpress-data
+          persistentVolumeClaim:
+            claimName: wordpress-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -33,8 +33,8 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-  - name: http
-    port: 80
-    targetPort: 80
+    - name: http
+      port: 80
+      targetPort: 80
   selector:
     app: wordpress

@@ -33,35 +33,59 @@ func main() {
 	}
 }
 
-func newCommandMap(k3ssCtx *k3sscripts.Context) map[args.CommandName]func() error {
-	return map[args.CommandName]func() error{
-		args.GlobalCommand: func() error {
+func newCommandMap(k3ssCtx *k3sscripts.Context) map[args.CommandName]args.ExecutionFunc {
+	return map[args.CommandName]args.ExecutionFunc{
+		args.GlobalCommand: func(flags map[string]string) error {
 			args.HelpPrint(args.GlobalCommand)
 			return nil
 		},
-		args.ClusterCommand: func() error {
+		args.ClusterCommand: func(flags map[string]string) error {
 			err := k3ssCtx.DeployK3sCluster()
 			if err != nil {
 				return err
 			}
 			return nil
 		},
-		args.DeployCommand: func() error {
-			err := k3ssCtx.DeployK3sPods()
+		args.DeployCommand: func(flags map[string]string) error {
+			isHelm := flags["--helm"] == "true"
+			if isHelm {
+				err := k3ssCtx.DeployK3sPodsHelm()
+				if err != nil {
+					return err
+				}
+				return nil
+			}
+
+			err := k3ssCtx.DeployK3sPodsSlim()
 			if err != nil {
 				return err
 			}
 
 			return nil
 		},
-		args.StatusCommand: func() error {
-			err := k3ssCtx.StatusK3Pods()
+		args.StatusCommand: func(flags map[string]string) error {
+			showService := flags["--service"] == "true"
+			showVolume := flags["--volume"] == "true"
+			showPod := flags["--pod"] == "true"
+			showNamespace := flags["--namespace"]
+
+			if showNamespace == "" {
+				showNamespace = "default"
+			}
+
+			if !showService && !showVolume && !showPod {
+				showService = true
+				showVolume = true
+				showPod = true
+			}
+
+			err := k3ssCtx.StatusK3Pods(showService, showVolume, showPod, showNamespace)
 			if err != nil {
 				return err
 			}
 			return nil
 		},
-		args.RemoveCommand: func() error {
+		args.RemoveCommand: func(flags map[string]string) error {
 			err := k3ssCtx.RemoveK3sCluster()
 			if err != nil {
 				return err

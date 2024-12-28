@@ -1,0 +1,37 @@
+storageClass:
+  name: custom-local-path
+  path: /data/tufin-assignment
+
+mysql:
+  name: mysql
+  replicas: 1
+  image: mysql:5.7
+  rootPassword: rootpassword
+  database: wordpress
+  user: wordpress
+  password: wordpresspassword
+  port: 3306
+  configMap:
+    name: mysql-config
+  pvc:
+    name: mysql-pvc
+    accessMode: ReadWriteOnce
+    storage: 1Gi
+
+wordpress:
+  name: wordpress
+  replicas: 1
+  image: wordpress:latest
+  dbHost: mysql
+  dbPort: 3306
+  dbUser: wordpress
+  dbPassword: wordpresspassword
+  dbName: wordpress
+  port: 80
+  externalIP: 172.20.40.0
+  configMap:
+    name: wordpress-config
+  pvc:
+    name: wordpress-pvc
+    accessMode: ReadWriteOnce
+    storage: 1Gi

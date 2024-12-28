@@ -59,7 +59,7 @@ func printFlags(flags []Flag) {
 	}
 }
 
-func ParseArgs(args []string, commandMap map[CommandName]func() error) error {
+func ParseArgs(args []string, commandMap map[CommandName]ExecutionFunc) error {
 	if len(args) < 1 {
 		HelpPrint(GlobalCommand)
 		return nil
@@ -91,28 +91,84 @@ func ParseArgs(args []string, commandMap map[CommandName]func() error) error {
 	return parseCommandArgs(args[1:], c, executeFunc)
 }
 
-func parseCommandArgs(args []string, c Command, executeFunc func() error) error {
-	if len(args) == 0 {
-		err := executeFunc()
-		// Command Executions are K3sScript Errors
-		return err
-	}
+func parseCommandArgs(args []string, c Command, executeFunc ExecutionFunc) error {
+	flagValues := make(map[string]string)
 
-	if len(c.Flags) == 0 && len(args) > 0 {
-		return NewUnknownArgsError(args, c.Name)
-	}
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
 
-	// Placeholder if we want to add flag logic
-	for _, arg := range args {
 		if arg == "--help" || arg == "-h" {
 			HelpPrint(c.Name)
 			return nil
-		} else {
-			return NewUnknownArgsError(args, c.Name)
 		}
+
+		if len(arg) > 2 && arg[:2] == "--" {
+			flagName := arg
+			matchedFlag, hasArg := matchLongFlag(c.Flags, flagName)
+			if matchedFlag == "" {
+				return NewInvalidFlagError(flagName, c.Name)
+			}
+
+			if hasArg {
+				if i+1 >= len(args) || (len(args[i+1]) > 0 && args[i+1][0] == '-') {
+					return NewFlagArgMissing(flagName, c.Name)
+				}
+				flagValues[matchedFlag] = args[i+1]
+				i++
+			} else {
+				flagValues[matchedFlag] = "true"
+			}
+			continue
+		}
+
+		if len(arg) > 1 && arg[0] == '-' {
+			for j, ch := range arg[1:] {
+				flag := string(ch)
+				matchedFlag, hasArg := matchFlag(c.Flags, flag)
+				if matchedFlag == "" {
+					return NewInvalidFlagError("-"+flag, c.Name)
+				}
+
+				if hasArg {
+					if j < len(arg[1:])-1 {
+						// Short flags requiring args cannot be joined in the same sequence
+						return NewFlagCombinationError([]string{arg}, c.Name)
+					} else if i+1 < len(args) && args[i+1][0] != '-' {
+						flagValues[matchedFlag] = args[i+1]
+						i++
+						break
+					} else {
+						return NewFlagArgMissing("-"+flag, c.Name)
+					}
+				} else {
+					flagValues[matchedFlag] = "true"
+				}
+			}
+			continue
+		}
+
+		return NewUnknownArgsError([]string{arg}, c.Name)
 	}
 
-	return nil
+	return executeFunc(flagValues)
+}
+
+func matchLongFlag(flags []Flag, long string) (string, bool) {
+	for _, f := range flags {
+		if f.Long == long {
+			return f.Long, f.HasArg
+		}
+	}
+	return "", false
+}
+
+func matchFlag(flags []Flag, short string) (string, bool) {
+	for _, f := range flags {
+		if f.Short == "-"+short {
+			return f.Long, f.HasArg
+		}
+	}
+	return "", false
 }
 
 func printVersion() {

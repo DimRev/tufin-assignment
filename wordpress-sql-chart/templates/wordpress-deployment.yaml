@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.wordpress.name }}
+spec:
+  replicas: {{ .Values.wordpress.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.wordpress.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.wordpress.name }}
+    spec:
+      containers:
+        - name: wordpress
+          image: {{ .Values.wordpress.image }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.wordpress.configMap.name }}
+          volumeMounts:
+            - mountPath: /var/www/html
+              name: wordpress-data
+          readinessProbe:
+            httpGet:
+              path: /wp-json
+              port: {{ .Values.wordpress.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.wordpress.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 5
+      volumes:
+        - name: wordpress-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.wordpress.pvc.name }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.wordpress.name }}
+  annotations:
+    service.beta.kubernetes.io/k3s-external-ip: {{ .Values.wordpress.externalIP | default "" }}
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: {{ .Values.wordpress.port }}
+      targetPort: {{ .Values.wordpress.port }}
+  selector:
+    app: {{ .Values.wordpress.name }}

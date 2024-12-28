@@ -2,20 +2,20 @@ package k3sscripts
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 )
 
-func (ctx *Context) DeployK3sPods() K3sError {
+func (ctx *Context) DeployK3sPodsSlim() K3sError {
 	if !CheckK3sInstalled() {
 		return NewK3sNotInstalledError("k3s is not installed or not running. Please ensure the cluster is deployed.")
 	}
 
-	if os.Geteuid() != 0 {
-		return NewUnauthorizedError("You must run this script as root")
+	err := CheckRootUser()
+	if err != nil {
+		return err
 	}
 
-	err := ctx.GenerateManifests()
+	err = ctx.GenerateManifests()
 	defer ctx.CleanupTempFiles()
 	if err != nil {
 		return err
@@ -35,5 +35,51 @@ func (ctx *Context) DeployK3sPods() K3sError {
 	}
 
 	fmt.Println("All manifests applied successfully.")
+	return nil
+}
+
+func (ctx *Context) DeployK3sPodsHelm() K3sError {
+	if !CheckK3sInstalled() {
+		return NewK3sNotInstalledError("k3s is not installed or not running. Please ensure the cluster is deployed.")
+	}
+
+	err := CheckRootUser()
+	if err != nil {
+		return err
+	}
+
+	if !CheckHelmInstalled() {
+		return NewHelmInstallError("helm is not installed. Please ensure helm is installed.")
+	}
+
+	err = ctx.GenerateHelmChart()
+	defer ctx.CleanupTempFiles()
+	if err != nil {
+		return err
+	}
+
+	if len(ctx.tempFiles) != 1 {
+		return NewYAMLFilesNotFound(
+			"wordpress-sql-1.0.0.tgz",
+			fmt.Sprintf("expected 1 file, found %d", len(ctx.tempFiles)),
+		)
+	}
+
+	helmChartPath := ctx.tempFiles[0]
+	fmt.Printf("Deploying helm chart: %s\n", helmChartPath)
+
+	cmd := exec.Command(
+		"helm", "install", "my-wordpress-sql",
+		helmChartPath,
+		"--kubeconfig=/etc/rancher/k3s/k3s.yaml",
+	)
+	cmd.Stdout = nil
+	cmd.Stderr = nil
+
+	if err := cmd.Run(); err != nil {
+		return NewHelmDeployError(fmt.Sprintf("failed to deploy Helm chart (error: %v)", err))
+	}
+
+	fmt.Println("Helm chart deployed successfully.")
 	return nil
 }
