@@ -1,8 +1,8 @@
 package args
 
 import (
+	"embed"
 	"fmt"
-	"os"
 )
 
 func getCommand(name CommandName) (Command, ArgErrors) {
@@ -59,7 +59,7 @@ func printFlags(flags []Flag) {
 	}
 }
 
-func ParseArgs(args []string, commandMap map[CommandName]ExecutionFunc) error {
+func ParseArgs(args []string, commandMap map[CommandName]ExecutionFunc, version embed.FS) error {
 	if len(args) < 1 {
 		HelpPrint(GlobalCommand)
 		return nil
@@ -68,7 +68,7 @@ func ParseArgs(args []string, commandMap map[CommandName]ExecutionFunc) error {
 	command := CommandName(args[0])
 
 	if args[0] == "--version" || args[0] == "-v" {
-		printVersion()
+		printVersion(version)
 		return nil
 	}
 	if args[0] == "--help" || args[0] == "-h" {
@@ -171,8 +171,8 @@ func matchFlag(flags []Flag, short string) (string, bool) {
 	return "", false
 }
 
-func printVersion() {
-	readVersion, err := os.ReadFile("./version")
+func printVersion(version embed.FS) {
+	readVersion, err := version.ReadFile("version")
 	if err != nil {
 		fmt.Println(err)
 		return

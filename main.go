@@ -12,12 +12,15 @@ import (
 //go:embed manifests/*
 var manifests embed.FS
 
+//go:embed version
+var version embed.FS
+
 func main() {
 	var k3ssCtx = k3sscripts.NewContext(manifests)
 	var commandMap = newCommandMap(k3ssCtx)
 
 	inputArgs := os.Args[1:]
-	err := args.ParseArgs(inputArgs, commandMap)
+	err := args.ParseArgs(inputArgs, commandMap, version)
 	if err != nil {
 		switch err := err.(type) {
 		case args.ArgErrors:
