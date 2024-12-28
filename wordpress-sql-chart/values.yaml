@@ -14,7 +14,6 @@ mysql:
   configMap:
     name: mysql-config
   pvc:
-    pvc:
     name: mysql-pvc
     accessMode: ReadWriteOnce
     storage: 1Gi
@@ -29,6 +28,7 @@ wordpress:
   dbPassword: wordpresspassword
   dbName: wordpress
   port: 80
+  externalIP: 172.20.40.0
   configMap:
     name: wordpress-config
   pvc:

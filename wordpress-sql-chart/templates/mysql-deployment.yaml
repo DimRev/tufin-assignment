@@ -21,6 +21,24 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/mysql
               name: mysql-data
+          readinessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - -h
+                - localhost
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - -h
+                - localhost
+            initialDelaySeconds: 15
+            periodSeconds: 20
       volumes:
         - name: mysql-data
           persistentVolumeClaim:
