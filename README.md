@@ -41,3 +41,18 @@ tufin-assignment status -pv -n example
 ```
 
 - The -pv flag will show the status of all PersistentVolumeClaims and Pods in the example namespace.
+
+## CHANGELOG
+
+### v1.0.0 - Finalize the assignment
+
+- App deploys a k3s cluster
+- App deploys two pods: MySQL and WordPress
+- App shows status
+
+### v1.1.0 - Add Helm support
+
+- Add ability to parse flags and execute different commands based on them
+- Status now can show pods/services/PVCs in a given namespace
+- Add Helm support
+- Deploy has a helm flag to deploy via a embedded Helm chart

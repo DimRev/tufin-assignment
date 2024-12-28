@@ -30,6 +30,7 @@ const (
 	ValuesReplacementErrorCode  = 212
 	HelmInstallErrorCode        = 213
 	HelmUninstallErrorCode      = 214
+	HelmDeployErrorCode         = 215
 )
 
 func (e GenericK3sError) Error() string {
@@ -102,6 +103,10 @@ type HelmInstallError struct {
 }
 
 type HelmUninstallError struct {
+	GenericK3sError
+}
+
+type HelmDeployError struct {
 	GenericK3sError
 }
 
@@ -231,6 +236,15 @@ func NewHelmUninstallError(message string) K3sError {
 		GenericK3sError{
 			Message:    fmt.Sprintf("K3HelmUninstallError: %s", message),
 			StatusCode: HelmUninstallErrorCode,
+		},
+	}
+}
+
+func NewHelmDeployError(message string) K3sError {
+	return &HelmDeployError{
+		GenericK3sError{
+			Message:    fmt.Sprintf("K3HelmDeployError: %s", message),
+			StatusCode: HelmDeployErrorCode,
 		},
 	}
 }

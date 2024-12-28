@@ -66,8 +66,20 @@ func (ctx *Context) DeployK3sPodsHelm() K3sError {
 	}
 
 	helmChartPath := ctx.tempFiles[0]
-
 	fmt.Printf("Deploying helm chart: %s\n", helmChartPath)
 
+	cmd := exec.Command(
+		"helm", "install", "my-wordpress-sql",
+		helmChartPath,
+		"--kubeconfig=/etc/rancher/k3s/k3s.yaml",
+	)
+	cmd.Stdout = nil
+	cmd.Stderr = nil
+
+	if err := cmd.Run(); err != nil {
+		return NewHelmDeployError(fmt.Sprintf("failed to deploy Helm chart (error: %v)", err))
+	}
+
+	fmt.Println("Helm chart deployed successfully.")
 	return nil
 }
